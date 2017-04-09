@@ -93,7 +93,7 @@ void print_lines_stdin() {
     lines_left = max_lines;
     n = 0;
     while (lines_left > 0) {
-        n = read(STDOUT_FILENO, buffer, BUFF_SIZE);
+        n = read(STDIN_FILENO, buffer, BUFF_SIZE);
         if (n == 0) break;
         for (int i = 0; i < n; i++) {
             if (buffer[i] == '\n') {
