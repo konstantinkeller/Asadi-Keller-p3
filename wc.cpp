@@ -65,14 +65,19 @@ int main(int argc, char * argv[]) {
     bool * succeed = new bool[files];
     if (files > 0) {
         for (int i = 0; i < files; i++) {
-            int fd;
-            if ((fd = open(fileargs[i], O_RDONLY)) != -1) {
-                count(fd, i);
-                succeed[i] = true;
+            if (strcmp(fileargs[i], "-") != 0) {
+                int fd;
+                if ((fd = open(fileargs[i], O_RDONLY)) != -1) {
+                    count(fd, i);
+                    succeed[i] = true;
+                } else {
+                    string msg = ("wc: " + string(fileargs[i]));
+                    perror(msg.c_str());
+                    succeed[i] = false;
+                }
             } else {
-                string msg = ("wc: " + string(fileargs[i]));
-                perror(msg.c_str());
-                succeed[i] = false;
+                count(STDIN_FILENO, i);
+                succeed[i] = true;
             }
         }
         maxw = calc_maxw();
@@ -86,6 +91,11 @@ int main(int argc, char * argv[]) {
             print_counts(total_lines, total_words, total_chars, total_bytes);
             cout << "total" << endl;
         }
+    } else {
+        count(STDIN_FILENO, 0);
+        maxw = calc_maxw();
+        print_counts(line_ary[0], word_ary[0], char_ary[0], byte_ary[0]);
+        cout << endl;
     }
 
     delete[] line_ary;
