@@ -31,11 +31,18 @@ int main(int argc, char * argv[]) {
         }
     }
 
+    cout.setf(ios::unitbuf);
     if (fileargs.size() == 0) {
         print_lines_stdin();
     } else {
-        for (char * file : fileargs) {
-            print_lines_file(file);
+        for (uint i = 0; i < fileargs.size(); i++) {
+            if (fileargs.size() > 1) {
+                cout << "==> " << fileargs[i] << " <==" << endl;
+            }
+            print_lines_file(fileargs[i]);
+            if ((fileargs.size() > 1) && (i != fileargs.size() - 1)) {
+                cout << endl;
+            }
         }
     }
 
@@ -50,7 +57,7 @@ void print_lines_file(char * fname) {
 
     const size_t BUFF_SIZE = 1024;
     char buffer [BUFF_SIZE];
-    int n;
+    uint n;
 
     if ((fd = open(fname, O_RDONLY)) != -1) {
         lines_left = max_lines;
@@ -58,7 +65,7 @@ void print_lines_file(char * fname) {
         while (lines_left > 0) {
             n = read(fd, buffer, BUFF_SIZE);
             if (n == 0) break;
-            for (int i = 0; i < n; i++) {
+            for (uint i = 0; i < n; i++) {
                 if (buffer[i] == '\n') {
                     lines_left--;
                     if (lines_left == 0) {
@@ -68,15 +75,18 @@ void print_lines_file(char * fname) {
                 }
                 bytes_to_write = n;
             }
+            if (n < BUFF_SIZE && buffer[bytes_to_write-1] == '\n') {
+                bytes_to_write--;
+            }
             if (write(STDOUT_FILENO, buffer, bytes_to_write) == -1) {
-                cout << "Error while writing file to stdout.";
+                perror("head");
                 exit(EXIT_FAILURE);
             }
         }
         cout << std::endl;
         close(fd);
     } else {
-        cout << "Error while opening file.";
+        perror("head");
         exit(EXIT_FAILURE);
     }
 }

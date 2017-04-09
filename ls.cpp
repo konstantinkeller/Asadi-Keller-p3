@@ -99,6 +99,9 @@ int main(int argc, char * argv[]) {
         if (i > 0)
             cout << endl;
 
+        if (fileargs.size() > 1)
+            cout << fileargs[i] << ":" << endl;
+
         if (!list_detailed)
             print_list_simple();
         else
