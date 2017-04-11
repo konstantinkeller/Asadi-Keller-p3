@@ -4,6 +4,7 @@
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <vector>
 #include <cstring>
 
@@ -18,18 +19,18 @@ int main(int argc, char * argv[]) {
     char * fname;
     vector<char *> fileargs;
 
-    if (argc > 1) {
-        for (int i = 1; i < argc; i++) {
-            if ((argv[i][0] == '-') && (strcmp(argv[i], "-") != 0)) {
-                switch (argv[i][1]) {
-                    case 'n':
-                        max_lines = atoi(argv[i+1]);
-                }
-            } else {
-                fname = argv[i];
-                fileargs.push_back(fname);
-            }
+    int optc;
+    while ((optc = getopt(argc, argv, "n:")) != -1) {
+        switch (optc) {
+            case 'n':
+                max_lines = atoi(optarg);
+                break;
         }
+    } 
+    
+   for (int i = optind; i < argc; i++) {
+        fname = argv[i];
+        fileargs.push_back(fname);
     }
 
     cout.setf(ios::unitbuf);

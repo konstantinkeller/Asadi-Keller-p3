@@ -11,4 +11,4 @@ all: $(patsubst %.cpp, %, $(wildcard *.cpp))
 .PHONY: clean
 clean:
 	rm -rf *.o
-	rm -rf cal date head ln ls mkdir env tail true false wc
+	rm -rf cal date head ln ls mkdir env tail true false wc cksum pwd 

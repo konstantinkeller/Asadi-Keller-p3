@@ -1,13 +1,12 @@
 #include <iostream>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
-#include <getopt.h>
+#include <cstring>
 
 using namespace std;
 
 bool mkdir_norm(char *);
-bool mkdir_p(char *);
+bool mkdir_parents(char *);
 
 bool create_intermediates;
 bool set_mode;
@@ -29,9 +28,13 @@ int main(int argc, char * argv[]) {
 
     for (int i = optind; i < argc; i++) {
         if (!create_intermediates) {
-            if (!mkdir_norm(argv[i])) {
+            if (!mkdir_norm(argv[i]))
                 exit(EXIT_FAILURE);
-            }
+        } else {
+            if (!mkdir_parents(argv[i]))
+                exit(EXIT_FAILURE);
+            if (!mkdir_norm(argv[i]))
+                exit(EXIT_FAILURE);
         }
     }
 }
@@ -42,7 +45,7 @@ bool mkdir_norm(char * dir) {
         mode = (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
     } else {
         mode = stoul(new_mode, NULL, 8);
-        mode_t umask_val = umask(0);
+        umask(0);
     }
 
     if (mkdir(dir, mode) != 0) {
@@ -53,17 +56,26 @@ bool mkdir_norm(char * dir) {
     return true;
 }
 
-bool mkdir_p(char * dir) {
-    struct stat sb;
-    char * current_dir = getenv("PWD");
+bool mkdir_parents(char * dir) {
+    char tmp[256];
+    char *ptr;
 
-    mode_t mode;
-    if (!set_mode) {
-        mode = (S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-    } else {
-        mode = stoul(new_mode, NULL, 8);
-        mode_t umask_val = umask(0);
+    snprintf(tmp, sizeof(tmp), "%s", dir);
+    int len = strlen(tmp);
+
+    if (tmp[len-1] == '/')
+        tmp[len-1] = 0;
+
+    for (ptr = tmp+1; *ptr; ptr++) {
+        if (*ptr == '/') {
+            *ptr = 0;
+            if (mkdir(tmp, 0755) != 0) {
+                perror("mkdir");
+                return false;
+            }
+            *ptr = '/';
+        }
     }
 
-    
+    return true;
 }
