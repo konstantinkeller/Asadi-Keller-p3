@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <vector>
+#include <cstring>
 
 using namespace std;
 
@@ -19,12 +20,12 @@ int main(int argc, char * argv[]) {
 
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
-            if (argv[i][0] == '-') {
+            if ((argv[i][0] == '-') && (strcmp(argv[i], "-") != 0)) {
                 switch (argv[i][1]) {
                     case 'n':
                         max_lines = atoi(argv[i+1]);
                 }
-            } else if (argv[i-1][0] != '-') {
+            } else {
                 fname = argv[i];
                 fileargs.push_back(fname);
             }
@@ -39,7 +40,11 @@ int main(int argc, char * argv[]) {
             if (fileargs.size() > 1) {
                 cout << "==> " << fileargs[i] << " <==" << endl;
             }
-            print_lines_file(fileargs[i]);
+            if (strcmp(fileargs[i], "-") == 0) {
+                print_lines_stdin();
+            } else {
+                print_lines_file(fileargs[i]);
+            }
             if ((fileargs.size() > 1) && (i != fileargs.size() - 1)) {
                 cout << endl;
             }
