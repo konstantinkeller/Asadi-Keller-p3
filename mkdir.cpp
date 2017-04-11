@@ -25,6 +25,7 @@ int main(int argc, char * argv[]) {
                 break;
         }
     }
+    if (optind == argc) cout << "USAGE: ./mkdir [-p] [-m mode] [dir...]" << endl;
 
     for (int i = optind; i < argc; i++) {
         if (!create_intermediates) {
@@ -69,7 +70,7 @@ bool mkdir_parents(char * dir) {
     for (ptr = tmp+1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = 0;
-            if (mkdir(tmp, 0755) != 0) {
+            if (mkdir(tmp, 0755) != 0 && errno != EEXIST) {
                 perror("mkdir");
                 return false;
             }
