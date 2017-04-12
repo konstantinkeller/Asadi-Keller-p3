@@ -2,7 +2,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-
+/**
+this program returns the path in which
+the user is in currently using the
+pathconf and getcwd fucntions
+ */
 int main(int argc, char * argv[]){
   int size;
   char* str;
@@ -10,5 +14,5 @@ int main(int argc, char * argv[]){
   size =pathconf(".", _PC_PATH_MAX);
   str= argv[1];
   ptr= getcwd(str, (size_t)size);
-  printf("Current Directory is in: %s\n", ptr);
+  printf("%s\n", ptr);
 }

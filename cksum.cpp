@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+//http://pubs.opengroup.org/onlinepubs/9699919799/utilities/cksum.html
 static unsigned long crctab[] = {
   0x00000000,
   0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc, 0x17c56b6b,
@@ -58,7 +59,12 @@ static unsigned long crctab[] = {
   0xa2f33668, 0xbcb4666d, 0xb8757bda, 0xb5365d03, 0xb1f740b4
 };
 
-
+/**
+function for memcrc for functions crctab
+@param const unsigned char*b
+@param size_t n
+@return ~s unsigned long
+ */
 unsigned long memcrc(const unsigned char *b, size_t n)
 {
   /*  Input arguments:
@@ -87,10 +93,13 @@ unsigned long memcrc(const unsigned char *b, size_t n)
 
   return ~s;
 }
-
+/**
+This program will calculate and write to the standard output
+of CRC for each input file and output octets in each file.
+ */
 int main(int argc, char* argv[]){
   unsigned char byt[4000];
-  size_t size;
+  //  size_t size;
   int c=0;
   char buff[1];
   unsigned long catch0;
@@ -108,6 +117,7 @@ int main(int argc, char* argv[]){
     //printf("%s \n", argv[1]);
     c=0;
   }
+  // reads the arguments of parameters
   else{  
     for(int i = 1; i< argc; i++){
       int fd = open(argv[i], O_RDONLY);
@@ -128,6 +138,7 @@ int main(int argc, char* argv[]){
 	c=0;
 	
       } 
+      // error handling
       else{
 	if(fd==-1){
 	  perror("cksum");
@@ -142,7 +153,7 @@ int main(int argc, char* argv[]){
 	  catch0=memcrc(byt,c);
 	  printf("%lu ",catch0);
 	  printf("%d ",c);
-	  printf("%s \n", argv[1]);
+	  printf("%s\n", argv[1]);
 	  c=0;
 	  
 	}    
