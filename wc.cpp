@@ -30,9 +30,14 @@ uint maxw;
 
 vector<char *> fileargs;
 
+/**
+ * Parses program arguments and processes them
+ */
 int main(int argc, char * argv[]) {
+    // parses arguments given to program
     if (argc > 1) {
         for (int i = 1; i < argc; i++) {
+            // if argument is an option
             if ((argv[i][0] == '-') && (strcmp(argv[i], "-") != 0)) {
                 for (uint j = 1; j < strlen(argv[i]); j++) {
                     switch (argv[i][j]) {
@@ -50,12 +55,15 @@ int main(int argc, char * argv[]) {
                             break;
                     }
                 }
-            } else {
+            }
+            // if argument is file
+            else {
                 fileargs.push_back(argv[i]);
             }
         }
     }
 
+    // allocate array for each count to determine max width of values
     int files = fileargs.size();
     line_ary = new int[files];
     word_ary = new int[files];
@@ -64,6 +72,7 @@ int main(int argc, char * argv[]) {
 
     bool * succeed = new bool[files];
     if (files > 0) {
+        // for each file, attempt to open and count
         for (int i = 0; i < files; i++) {
             if (strcmp(fileargs[i], "-") != 0) {
                 int fd;
@@ -80,24 +89,30 @@ int main(int argc, char * argv[]) {
                 succeed[i] = true;
             }
         }
+        // calculate max width of all counts
         maxw = calc_maxw();
+        // for each file, print counts if count succeeded
         for (int i = 0; i < files; i++) {
             if (succeed[i]) {
                 print_counts(line_ary[i], word_ary[i], char_ary[i], byte_ary[i]);
                 cout << fileargs[i] << endl;
             }
         }
+        // if multiple file arguments given, print total counts at the end
         if (files > 1) {
             print_counts(total_lines, total_words, total_chars, total_bytes);
             cout << "total" << endl;
         }
-    } else {
+    } 
+    // if no arguments given, use stdin
+    else {
         count(STDIN_FILENO, 0);
         maxw = calc_maxw();
         print_counts(line_ary[0], word_ary[0], char_ary[0], byte_ary[0]);
         cout << endl;
     }
 
+    // deallocate arrays
     delete[] line_ary;
     delete[] word_ary;
     delete[] char_ary;
@@ -105,6 +120,10 @@ int main(int argc, char * argv[]) {
     delete[] succeed;
 }
 
+/**
+ * Count number of bytes, words, lines, and characters in each file and add to
+ * respective array at findex
+ */
 void count(int fd, int findex) {
     char buffer[BUFF_SIZE];
     int n;
@@ -146,43 +165,57 @@ void count(int fd, int findex) {
             wchar_t wc;
             int len;
 
+            // get length of char (to handle wide chars)
             len = mbrtowc(&wc, ptr, bytes_left, &state);
+            // if error, increment pointer and continue
             if (len == -1) {
                 ptr++;
                 continue;
             }
+            // if length is 0, set len to 1 to continue
             if (len == 0) {
                 len = 1;
             }
 
+            // increment pointer by len for next char
             ptr += len;
             bytes_left -= len;
+            // increment char count
             chars++;
         }
     }
     words += word;
 
+    // add counts to totals
     total_lines += lines;
     total_words += words;
     total_chars += chars;
     total_bytes += bytes;
 
+    // add count to array at findex
     line_ary[findex] = lines;
     word_ary[findex] = words;
     char_ary[findex] = chars;
     byte_ary[findex] = bytes;
 }
 
+/**
+ * Calculates the maximum width of all counts for formatting
+ */
 int calc_maxw() {
     uint maxw = 0;
     int files = fileargs.size();
 
+    // for each array entry/file
     for (int i = 0; i < files; i++) {
+        // if no options given, print default counts
         if (!print_bytes && !print_lines && !print_chars && !print_words) {
             if (to_string(line_ary[i]).length() > maxw) maxw = to_string(line_ary[i]).length();
             if (to_string(word_ary[i]).length() > maxw) maxw = to_string(word_ary[i]).length();
             if (to_string(char_ary[i]).length() > maxw) maxw = to_string(char_ary[i]).length();
-        } else {
+        }
+        // otherwise test only given options for width
+        else {
             if ((to_string(line_ary[i]).length() > maxw) && print_lines) maxw = to_string(line_ary[i]).length();
             if ((to_string(word_ary[i]).length() > maxw) && print_words) maxw = to_string(word_ary[i]).length();
             if ((to_string(char_ary[i]).length() > maxw) && print_chars) maxw = to_string(char_ary[i]).length();
@@ -190,6 +223,7 @@ int calc_maxw() {
         }
     }
 
+    // check width of totals too
     if (files > 1) {
         if (to_string(total_lines).length() > maxw) maxw = to_string(total_lines).length();
         if (to_string(total_words).length() > maxw) maxw = to_string(total_words).length();
@@ -200,11 +234,16 @@ int calc_maxw() {
     return maxw;
 }
 
+/**
+ * Prints counts with formatting
+ */
 void print_counts(int lines, int words, int chars, int bytes) {
+    // if no options given, print default counts (lines, words, and bytes)
     if (!print_bytes && !print_lines && !print_chars && !print_words) {
         cout << setw(maxw) << lines << " " << setw(maxw) << words << " " << setw(maxw) << bytes << " ";
     }
 
+    // otherwise print requested counts
     if (print_lines) {
         cout << setw(maxw) << lines << " ";
     }

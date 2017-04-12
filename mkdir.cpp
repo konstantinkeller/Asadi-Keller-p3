@@ -12,7 +12,11 @@ bool create_intermediates;
 bool set_mode;
 char * new_mode;
 
+/**
+ * Parses program arguments and processes each
+ */
 int main(int argc, char * argv[]) {
+    // parse program options
     int optc;
     while ((optc = getopt(argc, argv, "pm:")) != -1) {
         switch (optc) {
@@ -25,21 +29,32 @@ int main(int argc, char * argv[]) {
                 break;
         }
     }
+
+    // if no arguments given, print usage statement
     if (optind == argc) cout << "USAGE: ./mkdir [-p] [-m mode] [dir...]" << endl;
 
+    // for each argument, attempt to create directory
     for (int i = optind; i < argc; i++) {
+        // if -p not given
         if (!create_intermediates) {
             if (!mkdir_norm(argv[i]))
                 exit(EXIT_FAILURE);
-        } else {
+        }
+        // if -p given
+        else {
+            // make parent directories
             if (!mkdir_parents(argv[i]))
                 exit(EXIT_FAILURE);
+            // make last directory
             if (!mkdir_norm(argv[i]))
                 exit(EXIT_FAILURE);
         }
     }
 }
 
+/**
+ * Create directory dir and set mode if -m is given
+ */
 bool mkdir_norm(char * dir) {
     mode_t mode;
     if (!set_mode) {
@@ -57,16 +72,21 @@ bool mkdir_norm(char * dir) {
     return true;
 }
 
+/**
+ * Create directory parents if they don't already exist
+ */
 bool mkdir_parents(char * dir) {
     char tmp[256];
     char *ptr;
 
+    // populate tmp cstring with dir contents
     snprintf(tmp, sizeof(tmp), "%s", dir);
     int len = strlen(tmp);
 
     if (tmp[len-1] == '/')
         tmp[len-1] = 0;
 
+    // create each directory separated by slash from leftmost to rightmost parent dir
     for (ptr = tmp+1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = 0;
